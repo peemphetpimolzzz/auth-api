@@ -8,6 +8,8 @@ via Swagger and shipped as a single-command Docker stack with automated tests.
 ![CI](https://github.com/peemphetpimolzzz/auth-api/actions/workflows/ci.yml/badge.svg)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
+![Swagger UI](docs/screenshots/swagger.png)
+
 ## Features
 
 - **Register / login** with BCrypt password hashing.
