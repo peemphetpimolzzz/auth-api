@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unit tests
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src mcr.microsoft.com/dotnet/sdk:10.0 \
+            dotnet test backend/tests/AuthApi.UnitTests/AuthApi.UnitTests.csproj -c Release
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run integration tests
+        run: |
+          cp .env.example .env
+          docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm integration-tests
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml down -v

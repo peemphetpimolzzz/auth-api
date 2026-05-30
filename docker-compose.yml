@@ -1,0 +1,44 @@
+name: auth-api
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-authapi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-authapi}
+    ports:
+      - "${DB_PORT:-15432}:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-authapi} -d $${POSTGRES_DB:-authapi}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/src/AuthApi.Api/Dockerfile
+    environment:
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=${POSTGRES_DB:-authapi};Username=${POSTGRES_USER:-authapi};Password=${POSTGRES_PASSWORD}"
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER:-auth-api}
+      Jwt__Audience: ${JWT_AUDIENCE:-auth-api-clients}
+      ASPNETCORE_ENVIRONMENT: Production
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8082}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+volumes:
+  pg-data:

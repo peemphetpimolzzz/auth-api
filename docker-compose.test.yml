@@ -1,0 +1,30 @@
+# Overlay for the test stack:
+#   docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm integration-tests
+name: auth-api
+
+services:
+  test-db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-authapi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: authapi_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-authapi} -d authapi_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  integration-tests:
+    build:
+      context: .
+      dockerfile: backend/tests/AuthApi.IntegrationTests/Dockerfile
+    environment:
+      ConnectionStrings__Default: "Host=test-db;Port=5432;Database=authapi_test;Username=${POSTGRES_USER:-authapi};Password=${POSTGRES_PASSWORD}"
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER:-auth-api}
+      Jwt__Audience: ${JWT_AUDIENCE:-auth-api-clients}
+    depends_on:
+      test-db:
+        condition: service_healthy

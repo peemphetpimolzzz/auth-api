@@ -1,0 +1,5 @@
+bin/
+obj/
+.vs/
+[Tt]est[Rr]esult*/
+.env
