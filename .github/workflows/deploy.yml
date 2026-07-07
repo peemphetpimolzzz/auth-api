@@ -1,0 +1,82 @@
+name: Deploy (AWS)
+
+# Builds the API image, pushes it to Amazon ECR, and rolls it out to ECS Fargate.
+# Authentication uses GitHub OIDC (assume-role) — there are no long-lived AWS
+# access keys stored in the repository.
+#
+# Required repository configuration (see docs/deployment.md):
+#   Secrets:   AWS_DEPLOY_ROLE_ARN
+#   Variables: AWS_REGION, ECR_REPOSITORY, ECS_CLUSTER, ECS_SERVICE, TASK_FAMILY
+
+on:
+  # Manual only for now — no AWS resources or OIDC role are provisioned yet, so
+  # an automatic deploy would fail. Once the infrastructure and the repository
+  # secrets from docs/deployment.md are in place, re-enable the push trigger
+  # below to deploy on every merge to main.
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'backend/**'
+  #     - '.github/workflows/deploy.yml'
+
+concurrency:
+  # Queue overlapping deploys instead of cancelling — a cancel mid-rollout could
+  # leave a half-applied revision.
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write   # required for OIDC
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        id: build
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE="$REGISTRY/$REPOSITORY:$IMAGE_TAG"
+          docker build -f backend/src/AuthApi.Api/Dockerfile -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ vars.TASK_FAMILY }}" \
+            --query taskDefinition > task-definition.json
+
+      - name: Render new image into the task definition
+        id: render
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: api
+          image: ${{ steps.build.outputs.image }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render.outputs.task-definition }}
+          service: ${{ vars.ECS_SERVICE }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          wait-for-service-stability: true

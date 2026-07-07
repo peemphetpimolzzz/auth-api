@@ -28,7 +28,8 @@ via Swagger and shipped as a single-command Docker stack with automated tests.
 | Data | EF Core + PostgreSQL (Npgsql) |
 | Auth | JWT bearer (HS256), BCrypt |
 | Tests | xUnit (unit + integration via WebApplicationFactory) |
-| Infra | Docker Compose |
+| Infra | Docker Compose (local), Terraform + ECS Fargate (cloud) |
+| Cloud | AWS ECS Fargate, RDS PostgreSQL, ECR, Secrets Manager (OIDC CI/CD) |
 
 ## Quick start
 
@@ -93,6 +94,18 @@ Both run on every push via GitHub Actions.
 
 Copy `.env.example` to `.env`: PostgreSQL credentials, `JWT_KEY/JWT_ISSUER/JWT_AUDIENCE`, and
 host ports (`DB_PORT` defaults to `15432` to avoid clashing with a local PostgreSQL).
+
+## Deploy to AWS
+
+The same container runs in the cloud on **AWS ECS Fargate** behind an Application Load
+Balancer, backed by **RDS PostgreSQL**. Infrastructure is defined as Terraform in
+[`infra/`](infra/), and the [`Deploy (AWS)`](.github/workflows/deploy.yml) workflow builds
+the image, pushes it to ECR, and rolls out a new task revision — authenticating with
+**GitHub OIDC**, so no long-lived AWS keys live in the repo. The connection string and JWT
+signing key are stored in **Secrets Manager** and injected at runtime.
+
+See [`docs/deployment.md`](docs/deployment.md) for the full walkthrough (provisioning, OIDC
+role setup, and teardown).
 
 ## License
 
