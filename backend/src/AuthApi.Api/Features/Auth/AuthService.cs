@@ -79,11 +79,11 @@ public class AuthService(AuthDbContext db, IPasswordHasher hasher, ITokenService
         return new TokenResponse(access, rawNew, tokens.AccessTokenSeconds);
     }
 
-    public async Task LogoutAsync(string rawToken)
+    public async Task LogoutAsync(string rawToken, Guid? userId = null)
     {
         var hash = tokens.HashToken(rawToken);
         var stored = await db.RefreshTokens.FirstOrDefaultAsync(t => t.TokenHash == hash);
-        if (stored is { RevokedAt: null })
+        if (stored is { RevokedAt: null } && (userId is null || stored.UserId == userId))
         {
             stored.RevokedAt = DateTime.UtcNow;
             await db.SaveChangesAsync();

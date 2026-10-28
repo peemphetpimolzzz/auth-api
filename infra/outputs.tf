@@ -20,5 +20,5 @@ output "task_family" {
 
 output "api_url" {
   description = "Public URL of the API (via the load balancer)."
-  value       = "http://${aws_lb.api.dns_name}"
+  value       = "${var.certificate_arn == "" ? "http" : "https"}://${aws_lb.api.dns_name}"
 }

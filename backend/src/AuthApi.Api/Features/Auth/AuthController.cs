@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +24,9 @@ public class AuthController(AuthService auth) : ControllerBase
     [HttpPost("logout")]
     public async Task<IActionResult> Logout(RefreshRequest request)
     {
-        await auth.LogoutAsync(request.RefreshToken);
+        var idValue = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        Guid? userId = Guid.TryParse(idValue, out var parsed) ? parsed : null;
+        await auth.LogoutAsync(request.RefreshToken, userId);
         return NoContent();
     }
 }

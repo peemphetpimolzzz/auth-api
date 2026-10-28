@@ -110,6 +110,8 @@ static async Task MigrateAndSeedAsync(WebApplication app)
         }
     }
 
+    await DbSeeder.SeedRolesAsync(db);
+
     if (app.Configuration.GetValue("SEED_DATA", true))
     {
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();

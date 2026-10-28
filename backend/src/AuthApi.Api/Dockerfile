@@ -4,7 +4,7 @@ WORKDIR /src
 COPY Directory.Build.props Directory.Packages.props ./
 COPY backend/src/AuthApi.Api/AuthApi.Api.csproj backend/src/AuthApi.Api/
 RUN dotnet restore backend/src/AuthApi.Api/AuthApi.Api.csproj
-COPY backend/ backend/
+COPY backend/src/ backend/src/
 RUN dotnet publish backend/src/AuthApi.Api/AuthApi.Api.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final

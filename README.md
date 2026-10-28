@@ -5,8 +5,8 @@ project. Email/password registration with hashing, JWT access tokens plus rotati
 tokens (with revoke and reuse/theft detection), and role-based authorization. Self-documenting
 via Swagger and shipped as a single-command Docker stack with automated tests.
 
-![CI](https://github.com/peemphetpimolzzz/auth-api/actions/workflows/ci.yml/badge.svg)
-![License: MIT](https://img.shields.io/badge/license-MIT-blue)
+[![CI](https://github.com/peemphetpimolzzz/auth-api/actions/workflows/ci.yml/badge.svg)](https://github.com/peemphetpimolzzz/auth-api/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![Swagger UI](docs/screenshots/swagger.png)
 
@@ -107,6 +107,20 @@ signing key are stored in **Secrets Manager** and injected at runtime.
 See [`docs/deployment.md`](docs/deployment.md) for the full walkthrough (provisioning, OIDC
 role setup, and teardown).
 
+## Project structure
+
+```
+auth-api/
+├── backend/
+│   ├── src/AuthApi.Api/               # ASP.NET Core API (Auth, Domain, Data, Features)
+│   └── tests/                         # xUnit unit + integration tests (WebApplicationFactory)
+├── infra/                             # AWS Terraform IaC (ECS Fargate, RDS Postgres, ALB, Secrets Manager)
+├── docs/deployment.md                 # Cloud provisioning & OIDC CI/CD walkthrough
+├── docker-compose.yml                 # db + api
+├── docker-compose.test.yml            # throwaway test PostgreSQL + integration test runner
+└── .github/workflows/                 # CI (unit, integration) + AWS OIDC deploy
+```
+
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) — Part of [Peem Phetpimol's portfolio](https://peemphetpimolzzz.github.io) (Fullstack & Cloud Engineer · Test Automation).

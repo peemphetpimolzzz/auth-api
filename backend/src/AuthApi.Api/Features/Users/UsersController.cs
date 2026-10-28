@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using AuthApi.Api.Common;
 using AuthApi.Api.Data;
 using AuthApi.Api.Domain;
 using Microsoft.AspNetCore.Authorization;
@@ -16,11 +17,14 @@ public class UsersController(AuthDbContext db) : ControllerBase
     public ActionResult<MeResponse> Me()
     {
         var idValue = User.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? User.FindFirstValue("sub")
-            ?? throw new UnauthorizedAccessException();
+            ?? User.FindFirstValue("sub");
+        if (!Guid.TryParse(idValue, out var userId))
+        {
+            throw new UnauthorizedDomainException("Invalid user subject claim.");
+        }
         var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email") ?? string.Empty;
         var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
-        return Ok(new MeResponse(Guid.Parse(idValue), email, roles));
+        return Ok(new MeResponse(userId, email, roles));
     }
 
     [Authorize(Roles = RoleNames.Admin)]

@@ -12,10 +12,8 @@ public static class DbSeeder
     public const string AdminEmail = "admin@demo.dev";
     public const string AdminPassword = "Admin123!";
 
-    public static async Task SeedAsync(AuthDbContext db, IPasswordHasher hasher)
+    public static async Task SeedRolesAsync(AuthDbContext db)
     {
-        var seededAt = new DateTime(2026, 1, 5, 9, 0, 0, DateTimeKind.Utc);
-
         foreach (var name in new[] { RoleNames.Admin, RoleNames.User })
         {
             if (!await db.Roles.AnyAsync(r => r.Name == name))
@@ -24,6 +22,13 @@ public static class DbSeeder
             }
         }
         await db.SaveChangesAsync();
+    }
+
+    public static async Task SeedAsync(AuthDbContext db, IPasswordHasher hasher)
+    {
+        var seededAt = new DateTime(2026, 1, 5, 9, 0, 0, DateTimeKind.Utc);
+
+        await SeedRolesAsync(db);
 
         if (!await db.Users.AnyAsync(u => u.Email == AdminEmail))
         {

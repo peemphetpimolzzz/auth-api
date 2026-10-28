@@ -264,6 +264,7 @@ resource "aws_ecs_task_definition" "api" {
       environment = [
         { name = "ASPNETCORE_ENVIRONMENT", value = "Production" },
         { name = "ASPNETCORE_URLS", value = "http://+:8080" },
+        { name = "SEED_DATA", value = "false" },
         { name = "Jwt__Issuer", value = var.jwt_issuer },
         { name = "Jwt__Audience", value = var.jwt_audience }
       ]
