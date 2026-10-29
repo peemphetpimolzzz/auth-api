@@ -24,7 +24,7 @@ via Swagger and shipped as a single-command Docker stack with automated tests.
 
 | Layer | Technology |
 |-------|------------|
-| API | ASP.NET Core (.NET 10) |
+| API | ASP.NET Core (.NET) |
 | Data | EF Core + PostgreSQL (Npgsql) |
 | Auth | JWT bearer (HS256), BCrypt |
 | Tests | xUnit (unit + integration via WebApplicationFactory) |
