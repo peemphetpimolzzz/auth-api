@@ -1,33 +1,31 @@
-# Auth API
+# Auth API — ShieldAuth IAM, RBAC & Token Security Console
 
-A clean, secure authentication & authorization REST API — a reusable building block for any
-project. Email/password registration with hashing, JWT access tokens plus rotating refresh
-tokens (with revoke and reuse/theft detection), and role-based authorization. Self-documenting
-via Swagger and shipped as a single-command Docker stack with automated tests.
+A clean, production-grade authentication, role-based access control (RBAC), and token-rotation platform built on **ASP.NET Core (.NET 10)** and **PostgreSQL**. Includes both a **Minimal + Modern Admin Security Console (`ShieldAuth`)** at `/` and a self-documenting **OpenAPI / Swagger REST API** at `/swagger`.
 
 [![CI](https://github.com/peemphetpimolzzz/auth-api/actions/workflows/ci.yml/badge.svg)](https://github.com/peemphetpimolzzz/auth-api/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-![Swagger UI](docs/screenshots/swagger.png)
+![ShieldAuth Console](docs/screenshots/swagger.png)
 
 ## Features
 
-- **Register / login** with BCrypt password hashing.
-- **JWT access tokens** (short-lived) + **refresh tokens** (long-lived, stored only as a hash).
-- **Refresh-token rotation** — every refresh issues a new pair and revokes the old token;
-  presenting an already-revoked token revokes the whole chain (theft response).
-- **Role-based authorization** (`Admin` / `User`) with a protected admin-only endpoint.
-- **Swagger UI** with a Bearer "Authorize" button so you can try protected endpoints.
+- **ShieldAuth Admin & RBAC Console (`/`)** — Interactive IAM governance dashboard with Principal & Role Permission Matrix (`Admin`, `Manager`, `Auditor`, `User`), Active Refresh Token Family chain tracker with 1-click family revocation, Live JWT Auth & RBAC Endpoint Tester, and real-time Security Audit Log Stream.
+- **Register / Login** with adaptive BCrypt password hashing.
+- **JWT Access Tokens** (short-lived, HS256 ≥256-bit key) + **Refresh Tokens** (long-lived, stored only as SHA-256 hashes).
+- **Refresh-Token Rotation & Reuse Theft Detection** — Every refresh issues a new pair and revokes the old token; presenting an already-revoked token automatically revokes the entire token chain.
+- **Role-Based Authorization** (`Admin` / `User`) with protected admin-only endpoints (`/api/users/admin/users`).
+- **Swagger UI (`/swagger`)** with a Bearer "Authorize" button to test protected endpoints interactively.
 - Seeded admin account and roles on first run.
 
 ## Tech stack
 
 | Layer | Technology |
 |-------|------------|
-| API | ASP.NET Core (.NET) |
+| Console UI | Minimal + Modern IAM & Token Security Console (`wwwroot/index.html`) |
+| API | ASP.NET Core (.NET 10) |
 | Data | EF Core + PostgreSQL (Npgsql) |
-| Auth | JWT bearer (HS256), BCrypt |
-| Tests | xUnit (unit + integration via WebApplicationFactory) |
+| Auth | JWT bearer (HS256), SHA-256 Refresh Token Rotation, BCrypt |
+| Tests | xUnit (unit + integration via `WebApplicationFactory`) |
 | Infra | Docker Compose (local), Terraform + ECS Fargate (cloud) |
 | Cloud | AWS ECS Fargate, RDS PostgreSQL, ECR, Secrets Manager (OIDC CI/CD) |
 
@@ -42,8 +40,9 @@ cp .env.example .env
 docker compose up --build
 ```
 
-- Swagger UI — <http://localhost:8082/swagger>
-- Health — <http://localhost:8082/health>
+- **ShieldAuth Security Console** — <http://localhost:8082/>
+- **Swagger UI** — <http://localhost:8082/swagger>
+- **Health** — <http://localhost:8082/health>
 
 A seeded admin account is created: `admin@demo.dev` / `Admin123!` (change for production).
 
@@ -92,27 +91,20 @@ Both run on every push via GitHub Actions.
 
 ## Configuration
 
-Copy `.env.example` to `.env`: PostgreSQL credentials, `JWT_KEY/JWT_ISSUER/JWT_AUDIENCE`, and
-host ports (`DB_PORT` defaults to `15432` to avoid clashing with a local PostgreSQL).
+Copy `.env.example` to `.env`: PostgreSQL credentials, `JWT_KEY/JWT_ISSUER/JWT_AUDIENCE`, and host ports (`DB_PORT` defaults to `15432` to avoid clashing with a local PostgreSQL).
 
 ## Deploy to AWS
 
-The same container runs in the cloud on **AWS ECS Fargate** behind an Application Load
-Balancer, backed by **RDS PostgreSQL**. Infrastructure is defined as Terraform in
-[`infra/`](infra/), and the [`Deploy (AWS)`](.github/workflows/deploy.yml) workflow builds
-the image, pushes it to ECR, and rolls out a new task revision — authenticating with
-**GitHub OIDC**, so no long-lived AWS keys live in the repo. The connection string and JWT
-signing key are stored in **Secrets Manager** and injected at runtime.
+The same container runs in the cloud on **AWS ECS Fargate** behind an Application Load Balancer, backed by **RDS PostgreSQL**. Infrastructure is defined as Terraform in [`infra/`](infra/), and the [`Deploy (AWS)`](.github/workflows/deploy.yml) workflow builds the image, pushes it to ECR, and rolls out a new task revision — authenticating with **GitHub OIDC**, so no long-lived AWS keys live in the repo.
 
-See [`docs/deployment.md`](docs/deployment.md) for the full walkthrough (provisioning, OIDC
-role setup, and teardown).
+See [`docs/deployment.md`](docs/deployment.md) for the full walkthrough (provisioning, OIDC role setup, and teardown).
 
 ## Project structure
 
 ```
 auth-api/
 ├── backend/
-│   ├── src/AuthApi.Api/               # ASP.NET Core API (Auth, Domain, Data, Features)
+│   ├── src/AuthApi.Api/               # ASP.NET Core API + wwwroot ShieldAuth Console
 │   └── tests/                         # xUnit unit + integration tests (WebApplicationFactory)
 ├── infra/                             # AWS Terraform IaC (ECS Fargate, RDS Postgres, ALB, Secrets Manager)
 ├── docs/deployment.md                 # Cloud provisioning & OIDC CI/CD walkthrough

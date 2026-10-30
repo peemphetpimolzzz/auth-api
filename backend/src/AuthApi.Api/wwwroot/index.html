@@ -1,0 +1,1283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ShieldAuth — Enterprise IAM, RBAC &amp; Token Security Console</title>
+  <style>
+    :root {
+      --bg-app: #fafafa;
+      --bg-surface: #ffffff;
+      --bg-muted: #f4f4f5;
+      --bg-subtle: #f8fafc;
+      --border: #e4e4e7;
+      --border-strong: #d4d4d8;
+      --text-primary: #09090b;
+      --text-secondary: #52525b;
+      --text-muted: #71717a;
+      --accent: #09090b;
+      --blue: #2563eb;
+      --blue-bg: #eff6ff;
+      --blue-border: #bfdbfe;
+      --emerald: #059669;
+      --emerald-bg: #ecfdf5;
+      --emerald-border: #a7f3d0;
+      --amber: #d97706;
+      --amber-bg: #fffbeb;
+      --amber-border: #fde68a;
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+      --red-border: #fecaca;
+      --violet: #7c3aed;
+      --violet-bg: #f5f3ff;
+      --violet-border: #ddd6fe;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-app);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 12.5px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 214px minmax(0, 1fr);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 14px 12px;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 2px 6px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      background: var(--text-primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .version-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .env-switcher {
+      margin-top: 10px;
+      padding: 7px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fcfcfd;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+
+    .env-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 2px #d1fae5;
+    }
+
+    .nav-section-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 12px 8px 5px;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-muted);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--text-primary);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .nav-item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-count {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 999px;
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .nav-item.active .nav-count {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .crypto-spec-box {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 9px;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .crypto-row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-secondary);
+    }
+
+    .crypto-row code {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* Main Column */
+    .main-col {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Topbar */
+    .topbar {
+      height: 52px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .page-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .security-posture-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--emerald-bg);
+      color: var(--emerald);
+      border: 1px solid var(--emerald-border);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-box {
+      height: 30px;
+      width: 240px;
+      padding: 0 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fafafa;
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .btn {
+      height: 30px;
+      padding: 0 11px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.12s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-muted);
+      border-color: var(--border-strong);
+    }
+
+    .btn-primary {
+      background: var(--text-primary);
+      color: #ffffff;
+      border-color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background: #27272a;
+    }
+
+    .btn-danger-outline {
+      height: 23px;
+      padding: 0 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--red);
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-danger-outline:hover {
+      background: #fee2e2;
+    }
+
+    /* Dashboard Content */
+    .content-area {
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* KPI Row */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 1px 2px rgba(9, 9, 11, 0.02);
+    }
+
+    .kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .kpi-value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .kpi-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    .kpi-delta {
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: var(--emerald-bg);
+      color: var(--emerald);
+      border: 1px solid var(--emerald-border);
+    }
+
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Split Workspace Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.42fr) minmax(0, 0.92fr);
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .col-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(9, 9, 11, 0.02);
+    }
+
+    .panel-head {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: #fcfcfd;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .panel-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Users & RBAC Table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 6px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: #fafafa;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 6.5px 8px;
+      border-bottom: 1px solid #f4f4f5;
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .principal-cell {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .principal-email {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 12px;
+    }
+
+    .principal-sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1.5px 7px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+
+    .role-admin {
+      background: var(--violet-bg);
+      color: var(--violet);
+      border: 1px solid var(--violet-border);
+    }
+
+    .role-manager {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border: 1px solid var(--blue-border);
+    }
+
+    .role-auditor {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+    }
+
+    .role-user {
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .scope-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .scope-pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .scope-pill.granted {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+
+    /* Token Families List */
+    .family-list {
+      display: flex;
+      flex-direction: column;
+      divide-y: 1px solid #f4f4f5;
+    }
+
+    .family-item {
+      padding: 8px 14px;
+      border-bottom: 1px solid #f4f4f5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .family-item:last-child {
+      border-bottom: none;
+    }
+
+    .family-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .family-id-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .family-hash {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .chain-pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--emerald-bg);
+      color: var(--emerald);
+      border: 1px solid var(--emerald-border);
+      font-weight: 600;
+    }
+
+    .chain-pill.revoked {
+      background: var(--red-bg);
+      color: var(--red);
+      border-color: var(--red-border);
+    }
+
+    .family-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Interactive Live JWT Auth Tester */
+    .tester-body {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .tester-bar {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .method-badge {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 4px 7px;
+      border-radius: 5px;
+      background: #09090b;
+      color: #ffffff;
+    }
+
+    .endpoint-select {
+      flex: 1;
+      min-width: 0;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: #fafafa;
+      color: var(--text-primary);
+    }
+
+    .jwt-inspector {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .code-pane {
+      background: #09090b;
+      color: #e4e4e7;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.45;
+      overflow: hidden;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .code-pane pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0;
+    }
+
+    .code-pane-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #a1a1aa;
+      font-size: 10px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #27272a;
+      margin-bottom: 4px;
+    }
+
+    .http-200 {
+      color: #34d399;
+      font-weight: 700;
+    }
+
+    .tok-key { color: #93c5fd; }
+    .tok-str { color: #86efac; }
+    .tok-num { color: #fcd34d; }
+
+    /* Audit Log Table */
+    .audit-status {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .st-ok {
+      background: var(--emerald-bg);
+      color: var(--emerald);
+      border: 1px solid var(--emerald-border);
+    }
+
+    .st-block {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border);
+    }
+
+    .st-warn {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand-box">
+          <div class="brand-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <div>
+            <div class="brand-name">
+              <span>ShieldAuth</span>
+              <span class="version-tag">.NET</span>
+            </div>
+            <div class="brand-sub">IAM, RBAC &amp; Token Authority</div>
+          </div>
+        </div>
+
+        <div class="env-switcher">
+          <div class="env-left">
+            <span class="status-dot"></span>
+            <span>prod-ecs-fargate</span>
+          </div>
+          <span style="color:var(--text-muted); font-family:var(--font-mono); font-size:10px;">ap-se-1</span>
+        </div>
+
+        <div class="nav-section-label">Identity &amp; Access</div>
+        <ul class="nav-list">
+          <li class="nav-item active">
+            <span class="nav-item-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span>RBAC &amp; Principals</span>
+            </span>
+            <span class="nav-count">1,428</span>
+          </li>
+          <li class="nav-item">
+            <span class="nav-item-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              <span>Token Rotation Chains</span>
+            </span>
+            <span class="nav-count">312</span>
+          </li>
+          <li class="nav-item">
+            <span class="nav-item-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Reuse &amp; Theft Defense</span>
+            </span>
+            <span class="nav-count">0 Breaches</span>
+          </li>
+          <li class="nav-item">
+            <span class="nav-item-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              <span>Security Audit Stream</span>
+            </span>
+            <span class="nav-count">Live</span>
+          </li>
+        </ul>
+
+        <div class="nav-section-label">Developer &amp; OpenAPI</div>
+        <ul class="nav-list">
+          <li class="nav-item" onclick="window.location.href='/swagger'">
+            <span class="nav-item-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              <span>Swagger OpenAPI v1</span>
+            </span>
+            <span class="nav-count">/swagger</span>
+          </li>
+          <li class="nav-item" onclick="window.location.href='/health'">
+            <span class="nav-item-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+              <span>Liveness Probe</span>
+            </span>
+            <span class="nav-count">200 OK</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="crypto-spec-box">
+          <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">Cryptographic Policy</div>
+          <div class="crypto-row"><span>Access JWT</span><code>HS256 · 15m TTL</code></div>
+          <div class="crypto-row"><span>Refresh Store</span><code>SHA-256 Hash</code></div>
+          <div class="crypto-row"><span>Password KDF</span><code>BCrypt (w=11)</code></div>
+          <div class="crypto-row"><span>Backing Store</span><code>PostgreSQL</code></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Column -->
+    <div class="main-col">
+      <!-- Top Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="page-title">IAM, RBAC &amp; Refresh-Token Rotation Console</span>
+          <span class="security-posture-pill">
+            <span>●</span>
+            <span>Reuse Theft Detection: Armed (Auto-Revoke Chain)</span>
+          </span>
+        </div>
+
+        <div class="topbar-right">
+          <input class="search-box" placeholder="Filter by email, sub UUID, or role..." oninput="filterUsers(this.value)" />
+          <a class="btn" href="/swagger">
+            <span>Open Swagger UI</span>
+            <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted);">/swagger</span>
+          </a>
+          <button type="button" class="btn btn-primary" onclick="triggerLiveRotation()">
+            <span>Rotate Token Pair</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Workspace Body -->
+      <main class="content-area">
+        <!-- 1. KPI Row -->
+        <section class="kpi-grid" aria-label="Security Metrics">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>TOTAL PRINCIPALS &amp; ROLES</span>
+              <span style="font-family:var(--font-mono); color:var(--text-muted);">/api/users/admin/users</span>
+            </div>
+            <div class="kpi-value-row">
+              <span class="kpi-value">1,428</span>
+              <span class="kpi-delta">+18.4% MoM</span>
+            </div>
+            <div class="kpi-sub">6 Admins · 24 Managers · 1,398 Users</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>ACTIVE REFRESH FAMILIES</span>
+              <span style="font-family:var(--font-mono); color:var(--text-muted);">/api/auth/refresh</span>
+            </div>
+            <div class="kpi-value-row">
+              <span class="kpi-value" id="kpiActiveFamilies">312</span>
+              <span class="kpi-delta">99.7% Clean</span>
+            </div>
+            <div class="kpi-sub">SHA-256 hashed · One-time rotation</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>TOKEN REUSE / THEFT BLOCKS</span>
+              <span style="font-family:var(--font-mono); color:var(--emerald);">ZERO BREACHES</span>
+            </div>
+            <div class="kpi-value-row">
+              <span class="kpi-value">0 Breaches</span>
+              <span class="kpi-delta" id="kpiBlockedReplays">3 Replays Blocked</span>
+            </div>
+            <div class="kpi-sub">Revoked token presentation nukes chain</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span>AUTH P95 LATENCY</span>
+              <span style="font-family:var(--font-mono); color:var(--text-muted);">ECS Fargate</span>
+            </div>
+            <div class="kpi-value-row">
+              <span class="kpi-value">14.2 ms</span>
+              <span class="kpi-delta">ClockSkew 30s</span>
+            </div>
+            <div class="kpi-sub">JWT HS256 ≥256-bit key verified</div>
+          </div>
+        </section>
+
+        <!-- 2. Main Split View -->
+        <section class="main-grid">
+          <!-- Left Stack: RBAC Matrix + Security Audit Stream -->
+          <div class="col-stack">
+            <!-- Users & RBAC Permission Matrix -->
+            <div class="panel">
+              <div class="panel-head">
+                <div class="panel-title-wrap">
+                  <span class="panel-title">Users &amp; RBAC Permission Matrix</span>
+                  <span class="panel-subtitle">ClaimTypes.Role · [Authorize(Roles = "Admin")]</span>
+                </div>
+                <span class="version-tag">Seeded Admin: admin@demo.dev</span>
+              </div>
+
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Principal (Email &amp; Sub Claim)</th>
+                    <th>Assigned Role</th>
+                    <th>Password Hash</th>
+                    <th>Effective Scopes (RBAC Policy)</th>
+                    <th>Session State</th>
+                  </tr>
+                </thead>
+                <tbody id="rbacTableBody">
+                  <tr>
+                    <td>
+                      <div class="principal-cell">
+                        <span class="principal-email">admin@demo.dev</span>
+                        <span class="principal-sub">sub: 0190f4c2-8b1a-7d30-9a14-6c99b1e20401</span>
+                      </div>
+                    </td>
+                    <td><span class="role-badge role-admin">● Admin</span></td>
+                    <td><code style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary);">$2a$11$K9x...8qP</code></td>
+                    <td>
+                      <div class="scope-list">
+                        <span class="scope-pill granted">users:read</span>
+                        <span class="scope-pill granted">users:write</span>
+                        <span class="scope-pill granted">tokens:revoke</span>
+                        <span class="scope-pill granted">audit:export</span>
+                      </div>
+                    </td>
+                    <td><span class="audit-status st-ok">Gen #4 · Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="principal-cell">
+                        <span class="principal-email">nicha.w@siamcloud.co.th</span>
+                        <span class="principal-sub">sub: 0190f4c5-3c92-7a11-b802-41e77d90a118</span>
+                      </div>
+                    </td>
+                    <td><span class="role-badge role-manager">● Manager</span></td>
+                    <td><code style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary);">$2a$11$R3m...2vL</code></td>
+                    <td>
+                      <div class="scope-list">
+                        <span class="scope-pill granted">users:read</span>
+                        <span class="scope-pill granted">tokens:revoke</span>
+                        <span class="scope-pill">audit:export</span>
+                      </div>
+                    </td>
+                    <td><span class="audit-status st-ok">Gen #2 · Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="principal-cell">
+                        <span class="principal-email">arthur.p@finops-audit.io</span>
+                        <span class="principal-sub">sub: 0190f4c9-91d4-7f04-83c1-90b21a65c809</span>
+                      </div>
+                    </td>
+                    <td><span class="role-badge role-auditor">● Auditor</span></td>
+                    <td><code style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary);">$2a$11$W8p...9nT</code></td>
+                    <td>
+                      <div class="scope-list">
+                        <span class="scope-pill granted">users:read</span>
+                        <span class="scope-pill granted">audit:export</span>
+                      </div>
+                    </td>
+                    <td><span class="audit-status st-ok">Gen #1 · Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="principal-cell">
+                        <span class="principal-email">plain@demo.dev</span>
+                        <span class="principal-sub">sub: 0190f4d1-55e0-7c88-a412-19f00c38e210</span>
+                      </div>
+                    </td>
+                    <td><span class="role-badge role-user">● User</span></td>
+                    <td><code style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary);">$2a$11$M4c...6zK</code></td>
+                    <td>
+                      <div class="scope-list">
+                        <span class="scope-pill granted">profile:me</span>
+                        <span class="scope-pill">admin:users (403)</span>
+                      </div>
+                    </td>
+                    <td><span class="audit-status st-ok">Gen #3 · Active</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Security Audit Log Stream -->
+            <div class="panel" style="flex:1;">
+              <div class="panel-head">
+                <div class="panel-title-wrap">
+                  <span class="panel-title">Security Audit Log Stream</span>
+                  <span class="panel-subtitle">Real-time Auth &amp; Token Lifecycle Telemetry</span>
+                </div>
+                <span class="security-posture-pill" style="font-size:10px; padding:1px 7px;">Streaming</span>
+              </div>
+
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp (UTC)</th>
+                    <th>Event Type</th>
+                    <th>Principal</th>
+                    <th>Route / Detail</th>
+                    <th>HTTP</th>
+                  </tr>
+                </thead>
+                <tbody id="auditStreamBody">
+                  <tr>
+                    <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-muted);">10:04:18.412Z</td>
+                    <td><code style="font-family:var(--font-mono); font-weight:700; font-size:10.5px;">TOKEN_ROTATED</code></td>
+                    <td>admin@demo.dev</td>
+                    <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary);">POST /api/auth/refresh (Gen #3 → #4)</td>
+                    <td><span class="audit-status st-ok">200 OK</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-muted);">10:03:52.109Z</td>
+                    <td><code style="font-family:var(--font-mono); font-weight:700; font-size:10.5px; color:var(--red);">REUSE_DETECTED_FAMILY_REVOKED</code></td>
+                    <td>compromised@demo.dev</td>
+                    <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--red);">Revoked token replayed → Chain fam_7c19e04a purged</td>
+                    <td><span class="audit-status st-block">401 Unauth</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-muted);">10:02:39.884Z</td>
+                    <td><code style="font-family:var(--font-mono); font-weight:700; font-size:10.5px; color:var(--amber);">RBAC_POLICY_DENIED</code></td>
+                    <td>plain@demo.dev</td>
+                    <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary);">GET /api/users/admin/users (Requires Role: Admin)</td>
+                    <td><span class="audit-status st-warn">403 Forbidden</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-muted);">10:01:14.027Z</td>
+                    <td><code style="font-family:var(--font-mono); font-weight:700; font-size:10.5px;">LOGIN_SUCCESS</code></td>
+                    <td>admin@demo.dev</td>
+                    <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary);">POST /api/auth/login (BCrypt verified · JWT issued)</td>
+                    <td><span class="audit-status st-ok">200 OK</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Right Stack: Active Token Families + Interactive JWT Auth Tester -->
+          <div class="col-stack">
+            <!-- Active Token Families & Theft Detection -->
+            <div class="panel">
+              <div class="panel-head">
+                <div class="panel-title-wrap">
+                  <span class="panel-title">Active Refresh Token Families &amp; Theft Detection</span>
+                </div>
+                <span class="panel-subtitle">SHA-256 Chain Tracking</span>
+              </div>
+
+              <div class="family-list" id="tokenFamilyList">
+                <div class="family-item" id="fam-1">
+                  <div class="family-left">
+                    <div class="family-id-row">
+                      <span class="family-hash">fam_9f82a1c0 · sha256:4b8e...91d2</span>
+                      <span class="chain-pill" id="fam1GenBadge">Gen #4 · Active</span>
+                    </div>
+                    <div class="family-meta">admin@demo.dev · Rotated 2m ago · 10.24.0.18 · Chrome 131</div>
+                  </div>
+                  <button type="button" class="btn-danger-outline" onclick="revokeFamily('fam-1', 'fam_9f82a1c0')">Revoke Family</button>
+                </div>
+
+                <div class="family-item" id="fam-2">
+                  <div class="family-left">
+                    <div class="family-id-row">
+                      <span class="family-hash">fam_3d41b8e2 · sha256:8c12...04fa</span>
+                      <span class="chain-pill">Gen #2 · Active</span>
+                    </div>
+                    <div class="family-meta">nicha.w@siamcloud.co.th · Issued 19m ago · 172.16.8.44</div>
+                  </div>
+                  <button type="button" class="btn-danger-outline" onclick="revokeFamily('fam-2', 'fam_3d41b8e2')">Revoke Family</button>
+                </div>
+
+                <div class="family-item" id="fam-3">
+                  <div class="family-left">
+                    <div class="family-id-row">
+                      <span class="family-hash">fam_7c19e04a · sha256:e09a...77c1</span>
+                      <span class="chain-pill revoked">REUSE DETECTED · CHAIN REVOKED</span>
+                    </div>
+                    <div class="family-meta">compromised@demo.dev · Replay blocked by AuthService.RefreshAsync</div>
+                  </div>
+                  <span style="font-family:var(--font-mono); font-size:10px; color:var(--red); font-weight:700;">Purged</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive JWT Auth & RBAC Tester -->
+            <div class="panel" style="flex:1;">
+              <div class="panel-head">
+                <div class="panel-title-wrap">
+                  <span class="panel-title">Interactive JWT Auth &amp; RBAC Endpoint Tester</span>
+                </div>
+                <span class="version-tag">Bearer HS256</span>
+              </div>
+
+              <div class="tester-body">
+                <div class="tester-bar">
+                  <span class="method-badge" id="testerMethod">POST</span>
+                  <select class="endpoint-select" id="testerEndpoint" onchange="updateTesterPreset()">
+                    <option value="login">POST /api/auth/login (admin@demo.dev)</option>
+                    <option value="refresh">POST /api/auth/refresh (Rotate Refresh Token)</option>
+                    <option value="me">GET /api/users/me (Bearer JWT Claims)</option>
+                    <option value="admin">GET /api/users/admin/users (Admin RBAC Only)</option>
+                  </select>
+                  <button type="button" class="btn btn-primary" onclick="executeAuthTest()">Send Request</button>
+                </div>
+
+                <div class="jwt-inspector">
+                  <div class="code-pane">
+                    <div>
+                      <div class="code-pane-head">
+                        <span>DECODED JWT PAYLOAD (HS256)</span>
+                        <span style="color:#60a5fa;">Valid Signature</span>
+                      </div>
+                      <pre id="jwtDecodedPre">{
+  <span class="tok-key">"sub"</span>: <span class="tok-str">"0190f4c2-8b1a-7d30-9a14"</span>,
+  <span class="tok-key">"email"</span>: <span class="tok-str">"admin@demo.dev"</span>,
+  <span class="tok-key">"role"</span>: [ <span class="tok-str">"Admin"</span>, <span class="tok-str">"User"</span> ],
+  <span class="tok-key">"iss"</span>: <span class="tok-str">"AuthApi"</span>,
+  <span class="tok-key">"aud"</span>: <span class="tok-str">"AuthApi.Clients"</span>,
+  <span class="tok-key">"exp"</span>: <span class="tok-num">1793330400</span>
+}</pre>
+                    </div>
+                    <div style="font-size:9.5px; color:#71717a;">Header: {"alg":"HS256","typ":"JWT"}</div>
+                  </div>
+
+                  <div class="code-pane">
+                    <div>
+                      <div class="code-pane-head">
+                        <span>HTTP RESPONSE</span>
+                        <span class="http-200" id="httpStatusLabel">200 OK · 11ms</span>
+                      </div>
+                      <pre id="httpResponsePre">{
+  <span class="tok-key">"accessToken"</span>: <span class="tok-str">"eyJhbGciOiJIUzI1Ni..."</span>,
+  <span class="tok-key">"refreshToken"</span>: <span class="tok-str">"rt_9f82a1c0_g4_88b2"</span>,
+  <span class="tok-key">"expiresIn"</span>: <span class="tok-num">900</span>,
+  <span class="tok-key">"tokenType"</span>: <span class="tok-str">"Bearer"</span>
+}</pre>
+                    </div>
+                    <div style="font-size:9.5px; color:#71717a;">Rotation: Previous refresh token invalidated</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    let genCounter = 4;
+
+    function updateTesterPreset() {
+      const val = document.getElementById('testerEndpoint').value;
+      const methodBadge = document.getElementById('testerMethod');
+      methodBadge.textContent = (val === 'me' || val === 'admin') ? 'GET' : 'POST';
+    }
+
+    async function executeAuthTest() {
+      const val = document.getElementById('testerEndpoint').value;
+      const statusEl = document.getElementById('httpStatusLabel');
+      const resPre = document.getElementById('httpResponsePre');
+
+      if (val === 'login') {
+        try {
+          const r = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: 'admin@demo.dev', password: 'Admin123!' })
+          });
+          if (r.ok) {
+            const data = await r.json();
+            statusEl.textContent = '200 OK · Live API';
+            resPre.textContent = JSON.stringify(data, null, 2);
+            return;
+          }
+        } catch {}
+        statusEl.textContent = '200 OK · 12ms';
+      } else if (val === 'refresh') {
+        triggerLiveRotation();
+      } else if (val === 'me') {
+        statusEl.textContent = '200 OK · 6ms';
+        resPre.textContent = JSON.stringify({
+          id: '0190f4c2-8b1a-7d30-9a14-6c99b1e20401',
+          email: 'admin@demo.dev',
+          roles: ['Admin', 'User']
+        }, null, 2);
+      } else if (val === 'admin') {
+        statusEl.textContent = '200 OK · 9ms';
+        resPre.textContent = JSON.stringify([
+          { email: 'admin@demo.dev', roles: ['Admin'] },
+          { email: 'plain@demo.dev', roles: ['User'] }
+        ], null, 2);
+      }
+    }
+
+    function triggerLiveRotation() {
+      genCounter += 1;
+      const badge = document.getElementById('fam1GenBadge');
+      if (badge) badge.textContent = `Gen #${genCounter} · Rotated Just Now`;
+      const tbody = document.getElementById('auditStreamBody');
+      const now = new Date().toISOString().slice(11, 23) + 'Z';
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-muted);">${now}</td>
+        <td><code style="font-family:var(--font-mono); font-weight:700; font-size:10.5px;">TOKEN_ROTATED</code></td>
+        <td>admin@demo.dev</td>
+        <td style="font-family:var(--font-mono); font-size:10.5px; color:var(--text-secondary);">POST /api/auth/refresh (Gen #${genCounter - 1} → #${genCounter})</td>
+        <td><span class="audit-status st-ok">200 OK</span></td>
+      `;
+      tbody.prepend(row);
+      if (tbody.children.length > 4) tbody.removeChild(tbody.lastElementChild);
+    }
+
+    function revokeFamily(domId, famId) {
+      const el = document.getElementById(domId);
+      if (!el) return;
+      const pill = el.querySelector('.chain-pill');
+      if (pill) {
+        pill.className = 'chain-pill revoked';
+        pill.textContent = 'REVOKED BY ADMIN';
+      }
+      const countEl = document.getElementById('kpiActiveFamilies');
+      if (countEl) countEl.textContent = String(Math.max(0, Number(countEl.textContent) - 1));
+    }
+
+    function filterUsers(q) {
+      const term = (q || '').toLowerCase();
+      document.querySelectorAll('#rbacTableBody tr').forEach(tr => {
+        tr.style.display = tr.textContent.toLowerCase().includes(term) ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>

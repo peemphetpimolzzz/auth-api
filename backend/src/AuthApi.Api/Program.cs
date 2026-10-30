@@ -72,6 +72,8 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 app.UseMiddleware<ApiExceptionMiddleware>();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseSwagger();
 app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "Auth API v1"));
 app.UseAuthentication();
